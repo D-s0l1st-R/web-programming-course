@@ -1,0 +1,129 @@
+.contact-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  text-align: center;
+}
+
+.contact-info,
+.contact-form {
+  width: 100%;
+  max-width: 600px;
+}
+
+.contact-info address {
+  font-style: normal;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  text-align: center;
+}
+
+.contact-info p {
+  font-size: 1.1rem;
+}
+
+.contact-info a {
+  color: var(--accent-color);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.contact-info a:hover {
+  border-bottom-color: var(--accent-color);
+}
+
+.contact-form fieldset {
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.contact-form legend {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+.contact-form label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: -0.5rem;
+  align-self: flex-start;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid rgba(44, 44, 44, 0.2);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: #fff;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  text-align: left;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(166, 138, 100, 0.1);
+}
+
+.contact-form input[aria-invalid="true"],
+.contact-form textarea[aria-invalid="true"] {
+  border-color: var(--error-color);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 0.85rem;
+  margin-top: -0.5rem;
+  align-self: flex-start;
+}
+
+.submit-button {
+  padding: 1rem 2rem;
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  font-size: 1rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  align-self: center;
+}
+
+.submit-button:hover {
+  background-color: var(--accent-color);
+}
+
+.success-message {
+  color: var(--success-color);
+  font-weight: 500;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .contact-section {
+    gap: 2rem;
+  }
+
+  .contact-info,
+  .contact-form {
+    max-width: 100%;
+  }
+}

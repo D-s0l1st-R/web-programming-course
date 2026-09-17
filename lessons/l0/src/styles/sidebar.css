@@ -1,0 +1,90 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 2rem;
+  z-index: 100;
+}
+
+.sidebar-header {
+  margin-bottom: 4rem;
+}
+.sidebar-header h1 {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.sidebar-header p {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.sidebar-nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.sidebar-nav a {
+  font-size: 1.1rem;
+  font-weight: 300;
+  position: relative;
+  transition: all 0.3s ease;
+}
+.sidebar-nav a::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 2px;
+  background-color: var(--accent-color);
+  transition: width 0.3s ease;
+}
+.sidebar-nav a:hover {
+  color: var(--accent-color);
+  padding-left: 10px;
+}
+.sidebar-nav a:hover::before {
+  width: 15px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 1.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sidebar-header {
+    margin-bottom: 0;
+  }
+  .sidebar-header h1 {
+    font-size: 1.4rem;
+  }
+  .sidebar-header p {
+    display: none;
+  }
+  .sidebar-nav ul {
+    flex-direction: row;
+    gap: 1rem;
+  }
+  .sidebar-nav a {
+    font-size: 0.9rem;
+  }
+  .sidebar-nav a::before {
+    display: none;
+  }
+}
