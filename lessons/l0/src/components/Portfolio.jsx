@@ -2,7 +2,6 @@ import { useState } from "react";
 import "../styles/portfolio.css";
 import Modal from "./Modal";
 
-// ЗАМЕЧАНИЕ: Замените пути '/images/photo1.jpg' и т.д. на реальные пути к вашим 6 локальным изображениям в папке public/images/
 const photos = [
   {
     id: 1,
