@@ -1,35 +1,42 @@
-import trainingSetData from "../../course/data/training-set.json" with { type: "json" };
+export type TaskKind = "single-choice" | "short-text";
 
-export type TrainingSet = typeof trainingSetData;
-export type Task = TrainingSet["tasks"][number];
-
-export type Answer =
-  | { taskId: string; kind: "single-choice"; optionId: string }
-  | { taskId: string; kind: "short-text"; text: string };
-
-export const trainingSet: TrainingSet = trainingSetData;
-
-export function findTask(set: TrainingSet, taskId: string): Task | undefined {
-  return set.tasks.find((task) => task.id === taskId);
+export interface Option {
+  id: string;
+  label: string;
 }
 
-export function filterByTopic(set: TrainingSet, topic: string): Task[] {
-  return set.tasks.filter((task) => task.topic === topic);
+interface BaseTask {
+  id: string;
+  topic: string;
+  prompt: string;
+  code?: string;
 }
 
-export function calculateProgress(
-  set: TrainingSet,
-  answers: Answer[],
-): { completed: number; total: number } {
-  const total = set.tasks.length;
-  const completed = answers.filter((answer) => {
-    const task = findTask(set, answer.taskId);
-    if (!task) return false;
-    if (task.kind === "short-text") {
-      return answer.kind === "short-text" && answer.text.trim().length > 0;
-    }
-    return true;
-  }).length;
-
-  return { completed, total };
+export interface SingleChoiceTask extends BaseTask {
+  kind: "single-choice";
+  options: readonly Option[];
 }
+
+export interface ShortTextTask extends BaseTask {
+  kind: "short-text";
+}
+
+export type Task = SingleChoiceTask | ShortTextTask;
+
+export interface TrainingSet {
+  id: string;
+  title: string;
+  tasks: readonly Task[];
+}
+
+export interface SingleChoiceAnswer {
+  taskId: string;
+  optionId: string;
+}
+
+export interface ShortTextAnswer {
+  taskId: string;
+  text: string;
+}
+
+export type Answer = SingleChoiceAnswer | ShortTextAnswer;
