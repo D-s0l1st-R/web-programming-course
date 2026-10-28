@@ -1,0 +1,31 @@
+{
+  "name": "trainer",
+  "version": "1.0.0",
+  "description": "`trainer/` — единая рабочая папка приложения курса. В ней пока нет `package.json`, lockfile, конфигурации сборщика и исходников: проект создаётся студентом на L1. Поэтому до выполнения L1 команды `npm` из этой папки запускать не нужно.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "tsc --noEmit",
+    "demo": "tsx src/demo.ts",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "4.3.4",
+    "tsx": "4.23.13",
+    "typescript": "5.8.3",
+    "vite": "6.4.3"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}
