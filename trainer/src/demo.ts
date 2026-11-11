@@ -92,30 +92,6 @@ export const fullSet: TrainingSet = {
   tasks: normalizedSet.tasks,
 };
 
-export const set1 = {
-  id: normalizedSet.id,
-  title: normalizedSet.title,
-  tasks: [
-    normalizedSet.tasks.find((t) => t.id === "ts-1")!,
-    normalizedSet.tasks.find((t) => t.id === "react-1")!,
-  ],
-} satisfies TrainingSet;
-
-export const set2 = {
-  id: "advanced-topics",
-  title: "Продвинутые темы",
-  tasks: [
-    normalizedSet.tasks.find((t) => t.id === "ts-2")!,
-    normalizedSet.tasks.find((t) => t.id === "http-1")!,
-  ],
-} satisfies TrainingSet;
-
-export const set3 = {
-  id: "empty-set",
-  title: "Пустой набор",
-  tasks: [],
-} satisfies TrainingSet;
-
 const answers1: readonly Answer[] = [
   { kind: "single-choice", taskId: "ts-1", optionId: "b" },
   {
@@ -131,8 +107,6 @@ const answers2: readonly Answer[] = [
   { kind: "short-text", taskId: "http-1", text: "   " },
   { kind: "single-choice", taskId: "ts-1", optionId: "a" },
 ] as const;
-
-const answers3: readonly Answer[] = [] as const;
 
 export function findTask(set: TrainingSet, id: string): Task | undefined {
   return set.tasks.find((task) => task.id === id);
@@ -173,32 +147,3 @@ export function calculateProgress(
 console.log("--- Демонстрация работы с данными из JSON ---");
 console.log("Загруженный JSON (id):", rawTrainingSet["id "]);
 console.log("Нормализованный набор (id):", normalizedSet.id);
-
-const foundTs1 = findTask(set1, "ts-1");
-const notFound = findTask(set1, "non-existent");
-console.log("\n[Поиск]");
-console.log("Поиск ts-1:", foundTs1?.id);
-console.log("Поиск non-existent:", notFound);
-
-const tsTasks = filterByTopic(set1, "typescript");
-const noMatch = filterByTopic(set1, "python");
-const emptyFilter = filterByTopic(set3, "typescript");
-console.log("\n[Фильтр]");
-console.log("Фильтр typescript в set1 (ожидается 1):", tsTasks.length);
-console.log("Фильтр python в set1 (ожидается 0):", noMatch.length);
-console.log("Фильтр в пустом наборе set3 (ожидается 0):", emptyFilter.length);
-
-const progress1 = calculateProgress(set1, answers1);
-const progress2 = calculateProgress(set2, answers2);
-const progress3 = calculateProgress(set3, answers3);
-console.log("\n[Прогресс]");
-console.log("Прогресс set1 (ожидается 2 из 2):", progress1);
-console.log("Прогресс set2 (ожидается 1 из 2):", progress2);
-console.log("Прогресс set3 пустой (ожидается 0 из 0):", progress3);
-
-console.log("\n[Неизменяемость]");
-console.log("Исходный набор set1 не изменен (длина):", set1.tasks.length === 2);
-console.log(
-  "Исходный массив answers1 не изменен (длина):",
-  answers1.length === 3,
-);

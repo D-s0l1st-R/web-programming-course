@@ -29,7 +29,6 @@ export interface TrainingSet {
   tasks: readonly Task[];
 }
 
-// ↓ Добавлено поле kind как дискриминатор union
 export interface SingleChoiceAnswer {
   kind: "single-choice";
   taskId: string;
