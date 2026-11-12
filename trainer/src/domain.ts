@@ -42,3 +42,19 @@ export interface ShortTextAnswer {
 }
 
 export type Answer = SingleChoiceAnswer | ShortTextAnswer;
+
+export type DraftStatus = "in-progress" | "submitted";
+
+export interface Draft {
+  version: 1;
+  setId: string;
+  currentIndex: number;
+  answers: readonly Answer[];
+  status: DraftStatus;
+}
+
+export interface AttemptState {
+  currentIndex: number;
+  answers: readonly Answer[];
+  status: DraftStatus;
+}
