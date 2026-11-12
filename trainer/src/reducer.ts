@@ -1,22 +1,21 @@
-import type { Answer, AttemptState, Draft } from "./domain";
+import type { Answer } from "./domain";
+import {
+  type AttemptState,
+  createInitialState,
+  replaceAnswer,
+  removeAnswer,
+  clampIndex,
+} from "./attempt";
 
 export type Action =
   | { type: "answerChanged"; answer: Answer }
-  | { type: "moved"; index: number }
+  | { type: "answerRemoved"; taskId: string }
+  | { type: "moved"; index: number; tasksLength: number }
   | { type: "restored"; state: AttemptState }
   | { type: "reset" }
   | { type: "submitted" };
 
-export function createInitialState(): AttemptState {
-  return {
-    currentIndex: 0,
-    answers: [],
-    status: "in-progress",
-  };
-}
-
 export function reducer(state: AttemptState, action: Action): AttemptState {
-  // В submitted блокируем изменения
   if (state.status === "submitted" && action.type !== "reset") {
     return state;
   }
@@ -25,16 +24,19 @@ export function reducer(state: AttemptState, action: Action): AttemptState {
     case "answerChanged":
       return {
         ...state,
-        answers: [
-          ...state.answers.filter((a) => a.taskId !== action.answer.taskId),
-          action.answer,
-        ],
+        answers: replaceAnswer(state.answers, action.answer),
+      };
+
+    case "answerRemoved":
+      return {
+        ...state,
+        answers: removeAnswer(state.answers, action.taskId),
       };
 
     case "moved":
       return {
         ...state,
-        currentIndex: action.index,
+        currentIndex: clampIndex(action.index, action.tasksLength),
       };
 
     case "restored":
@@ -55,14 +57,4 @@ export function reducer(state: AttemptState, action: Action): AttemptState {
     default:
       return state;
   }
-}
-
-export function stateToDraft(setId: string, state: AttemptState): Draft {
-  return {
-    version: 1,
-    setId,
-    currentIndex: state.currentIndex,
-    answers: state.answers,
-    status: state.status,
-  };
 }

@@ -5,8 +5,10 @@ interface TaskCardProps {
   readonly task: Task;
   readonly answer: Answer | undefined;
   readonly onAnswer: (answer: Answer) => void;
+  readonly onRemove: () => void;
   readonly onPrev: () => void;
   readonly onNext: () => void;
+  readonly onReview: () => void;
   readonly onFinish: () => void;
   readonly isFirst: boolean;
   readonly isLast: boolean;
@@ -16,12 +18,16 @@ export function TaskCard({
   task,
   answer,
   onAnswer,
+  onRemove,
   onPrev,
   onNext,
+  onReview,
   onFinish,
   isFirst,
   isLast,
 }: TaskCardProps) {
+  const hasAnswer = answer !== undefined;
+
   return (
     <section
       style={{
@@ -55,7 +61,14 @@ export function TaskCard({
 
       <AnswerField task={task} answer={answer} onAnswer={onAnswer} />
 
-      <nav style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
+      <nav
+        style={{
+          marginTop: "1rem",
+          display: "flex",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+        }}
+      >
         <button
           onClick={onPrev}
           disabled={isFirst}
@@ -63,6 +76,7 @@ export function TaskCard({
         >
           Назад
         </button>
+
         {isLast ? (
           <button onClick={onFinish} style={{ padding: "0.5rem 1rem" }}>
             Завершить
@@ -70,6 +84,27 @@ export function TaskCard({
         ) : (
           <button onClick={onNext} style={{ padding: "0.5rem 1rem" }}>
             Далее
+          </button>
+        )}
+
+        <button
+          onClick={onReview}
+          style={{ padding: "0.5rem 1rem", marginLeft: "auto" }}
+        >
+          Обзор
+        </button>
+
+        {hasAnswer && (
+          <button
+            onClick={() => {
+              if (confirm(`Удалить ответ для "${task.id}"?`)) {
+                onRemove();
+              }
+            }}
+            style={{ padding: "0.5rem 1rem", color: "#c62828" }}
+            aria-label={`Удалить ответ для задания ${task.id}`}
+          >
+            Удалить ответ
           </button>
         )}
       </nav>

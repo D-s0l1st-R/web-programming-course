@@ -1,7 +1,15 @@
 import { useReducer, useEffect, useState } from "react";
 import { fullSet } from "./demo";
-import type { Answer, Task, AttemptState } from "./domain";
-import { reducer, createInitialState, stateToDraft, type Action } from "./reducer";
+import type { Answer, Task } from "./domain";
+import { reducer, type Action } from "./reducer";
+import {
+  type AttemptState,
+  createInitialState,
+  getAnswer,
+  answeredCount,
+  getMissingTasks,
+  canFinish,
+} from "./attempt";
 import { readDraft, saveDraft, clearDraft, getStorageKey } from "./storage";
 import { TaskList } from "./TaskList";
 import { TaskCard } from "./TaskCard";
@@ -10,12 +18,7 @@ import { Review } from "./Review";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { StorageWarning } from "./StorageWarning";
 
-function isAnswered(answers: readonly Answer[], taskId: string): boolean {
-  const answer = answers.find((a) => a.taskId === taskId);
-  if (!answer) return false;
-  if (answer.kind === "single-choice") return answer.optionId.length > 0;
-  return answer.text.trim().length > 0;
-}
+type AppMode = "task" | "review";
 
 type RestoreStatus = "none" | "restored" | "corrupted" | "mismatch";
 
@@ -24,26 +27,23 @@ export default function App() {
   const setId = fullSet.id;
 
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
+  const [mode, setMode] = useState<AppMode>("task");
   const [showWarning, setShowWarning] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [restoreStatus, setRestoreStatus] = useState<RestoreStatus>("none");
 
-  // Восстановление черновика при монтировании
+  // Восстановление черновика
   useEffect(() => {
     const key = getStorageKey(setId);
     const raw = localStorage.getItem(key);
     const draft = readDraft(raw);
 
     if (draft === null) {
-      if (raw !== null) {
-        // Был черновик, но он повреждён или несовместим
-        setRestoreStatus("corrupted");
-      }
+      if (raw !== null) setRestoreStatus("corrupted");
       return;
     }
 
     if (draft.setId !== setId) {
-      // Черновик от другого набора
       setRestoreStatus("mismatch");
       return;
     }
@@ -59,10 +59,16 @@ export default function App() {
     setRestoreStatus("restored");
   }, [setId]);
 
-  // Сохранение черновика при изменении состояния
+  // Сохранение черновика
   useEffect(() => {
     if (state.status === "in-progress") {
-      const draft = stateToDraft(setId, state);
+      const draft = {
+        version: 1 as const,
+        setId,
+        currentIndex: state.currentIndex,
+        answers: state.answers,
+        status: state.status,
+      };
       const result = saveDraft(draft);
       if (!result.success) {
         setStorageError(result.error || "Ошибка сохранения");
@@ -73,26 +79,32 @@ export default function App() {
   }, [state, setId]);
 
   const currentTask: Task | undefined = tasks[state.currentIndex];
+  const currentAnswer = currentTask
+    ? getAnswer(state.answers, currentTask.id)
+    : undefined;
 
-  const answeredCount = tasks.reduce(
-    (count, task) => count + (isAnswered(state.answers, task.id) ? 1 : 0),
-    0,
-  );
-
-  const missingTasks = tasks.filter((t) => !isAnswered(state.answers, t.id));
+  const count = answeredCount(tasks, state.answers);
+  const missing = getMissingTasks(tasks, state.answers);
+  const finished = canFinish(tasks, state.answers);
 
   const goTo = (index: number) => {
     if (state.status !== "in-progress") return;
-    const clamped = Math.max(0, Math.min(index, tasks.length - 1));
-    dispatch({ type: "moved", index: clamped });
+    dispatch({ type: "moved", index, tasksLength: tasks.length });
+    setMode("task");
   };
 
   const goNext = () => goTo(state.currentIndex + 1);
   const goPrev = () => goTo(state.currentIndex - 1);
 
+  const openReview = () => {
+    if (state.status !== "in-progress") return;
+    setMode("review");
+  };
+
   const requestFinish = () => {
-    if (missingTasks.length === 0) {
+    if (finished) {
       dispatch({ type: "submitted" });
+      setMode("task");
     } else {
       setShowWarning(true);
     }
@@ -101,15 +113,15 @@ export default function App() {
   const confirmFinish = () => {
     setShowWarning(false);
     dispatch({ type: "submitted" });
+    setMode("task");
   };
 
-  const cancelFinish = () => {
-    setShowWarning(false);
-  };
+  const cancelFinish = () => setShowWarning(false);
 
   const startNewAttempt = () => {
     clearDraft(setId);
     dispatch({ type: "reset" });
+    setMode("task");
     setRestoreStatus("none");
     setStorageError(null);
   };
@@ -118,53 +130,34 @@ export default function App() {
     clearDraft(setId);
     setRestoreStatus("none");
     dispatch({ type: "reset" });
+    setMode("task");
   };
 
-  // Если черновик повреждён или от другого набора — показываем сообщение
+  // Повреждённый/чужой черновик
   if (restoreStatus === "corrupted" || restoreStatus === "mismatch") {
     return (
       <main style={{ maxWidth: "720px", margin: "0 auto", padding: "1rem" }}>
-        <header>
-          <h1>{fullSet.title}</h1>
-        </header>
-        <div
-          style={{
-            padding: "1rem",
-            background: "#fff3e0",
-            border: "1px solid #ff9800",
-            borderRadius: "8px",
-            marginTop: "1rem",
-          }}
-        >
-          <h3>
-            {restoreStatus === "corrupted"
-              ? "Черновик повреждён"
-              : "Найден черновик другого набора"}
-          </h3>
-          <p>
-            {restoreStatus === "corrupted"
-              ? "Сохранённый черновик не удалось восстановить. Данные могут быть утеряны."
-              : "Найден черновик от другого учебного модуля. Он несовместим с текущим набором."}
-          </p>
-          <button
-            onClick={handleResetCorrupted}
-            style={{ padding: "0.5rem 1rem" }}
-          >
-            Начать новую попытку
-          </button>
+        <header><h1>{fullSet.title}</h1></header>
+        <div style={{ padding: "1rem", background: "#fff3e0", border: "1px solid #ff9800", borderRadius: "8px", marginTop: "1rem" }}>
+          <h3>{restoreStatus === "corrupted" ? "Черновик повреждён" : "Найден черновик другого набора"}</h3>
+          <p>{restoreStatus === "corrupted" ? "Сохранённый черновик не удалось восстановить." : "Найден черновик от другого учебного модуля."}</p>
+          <button onClick={handleResetCorrupted} style={{ padding: "0.5rem 1rem" }}>Начать новую попытку</button>
         </div>
       </main>
     );
   }
 
-  // Если попытка завершена — показываем обзор
+  // Завершённая попытка — только финальный обзор
   if (state.status === "submitted") {
     return (
       <main style={{ maxWidth: "720px", margin: "0 auto", padding: "1rem" }}>
-        <header>
-          <h1>{fullSet.title} — попытка завершена</h1>
-        </header>
-        <Review tasks={tasks} answers={state.answers} />
+        <header><h1>{fullSet.title} — попытка завершена</h1></header>
+        <Review
+          tasks={tasks}
+          answers={state.answers}
+          readonly
+          onGoTo={goTo}
+        />
         <div style={{ marginTop: "1rem" }}>
           <button onClick={startNewAttempt} style={{ padding: "0.5rem 1rem" }}>
             Начать новую попытку
@@ -188,23 +181,12 @@ export default function App() {
       {storageError && <StorageWarning error={storageError} />}
 
       {restoreStatus === "restored" && (
-        <div
-          style={{
-            padding: "0.5rem",
-            background: "#e3f2fd",
-            borderRadius: "4px",
-            marginBottom: "1rem",
-          }}
-        >
+        <div style={{ padding: "0.5rem", background: "#e3f2fd", borderRadius: "4px", marginBottom: "1rem" }}>
           Черновик восстановлен
         </div>
       )}
 
-      <Progress
-        answered={answeredCount}
-        total={tasks.length}
-        missing={missingTasks}
-      />
+      <Progress answered={count} total={tasks.length} missing={missing} />
 
       <TaskList
         tasks={tasks}
@@ -213,22 +195,33 @@ export default function App() {
         onSelect={goTo}
       />
 
-      {currentTask && (
+      {mode === "review" ? (
+        <Review
+          tasks={tasks}
+          answers={state.answers}
+          readonly={false}
+          onGoTo={goTo}
+          onRemove={(taskId) => dispatch({ type: "answerRemoved", taskId })}
+          onFinish={requestFinish}
+        />
+      ) : currentTask ? (
         <TaskCard
           task={currentTask}
-          answer={state.answers.find((a) => a.taskId === currentTask.id)}
+          answer={currentAnswer}
           onAnswer={(answer) => dispatch({ type: "answerChanged", answer })}
+          onRemove={() => dispatch({ type: "answerRemoved", taskId: currentTask.id })}
           onPrev={goPrev}
           onNext={goNext}
+          onReview={openReview}
           onFinish={requestFinish}
           isFirst={state.currentIndex === 0}
           isLast={state.currentIndex === tasks.length - 1}
         />
-      )}
+      ) : null}
 
       {showWarning && (
         <ConfirmDialog
-          missing={missingTasks}
+          missing={missing}
           onConfirm={confirmFinish}
           onCancel={cancelFinish}
         />
