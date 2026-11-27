@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { ShortTextTask, Answer } from "./domain";
+import type { ShortTextTask, Answer } from "../model/domain";
 
 interface ShortTextFormProps {
   readonly task: ShortTextTask;

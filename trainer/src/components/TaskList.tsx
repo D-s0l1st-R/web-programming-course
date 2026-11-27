@@ -1,17 +1,11 @@
-import type { Task, Answer } from "./domain";
+import type { Task, Answer } from "../model/domain";
+import { getAnswer, isAnswered } from "../model/attempt";
 
 interface TaskListProps {
   readonly tasks: readonly Task[];
   readonly currentIndex: number;
   readonly answers: readonly Answer[];
   readonly onSelect: (index: number) => void;
-}
-
-function isAnswered(answers: readonly Answer[], taskId: string): boolean {
-  const answer = answers.find((a) => a.taskId === taskId);
-  if (!answer) return false;
-  if (answer.kind === "single-choice") return answer.optionId.length > 0;
-  return answer.text.trim().length > 0;
 }
 
 export function TaskList({
@@ -33,7 +27,7 @@ export function TaskList({
       >
         {tasks.map((task, index) => {
           const isCurrent = index === currentIndex;
-          const filled = isAnswered(answers, task.id);
+          const filled = isAnswered(getAnswer(answers, task.id));
           return (
             <li key={task.id}>
               <button

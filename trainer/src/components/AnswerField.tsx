@@ -1,15 +1,24 @@
-import type { Task, Answer } from "./domain";
+import type { Task, Answer } from "../model/domain";
 
 interface AnswerFieldProps {
   readonly task: Task;
   readonly answer: Answer | undefined;
   readonly onAnswer: (answer: Answer) => void;
+  readonly disabled?: boolean;
 }
 
-export function AnswerField({ task, answer, onAnswer }: AnswerFieldProps) {
+export function AnswerField({
+  task,
+  answer,
+  onAnswer,
+  disabled,
+}: AnswerFieldProps) {
   if (task.kind === "single-choice") {
     return (
-      <fieldset style={{ border: "none", padding: 0, margin: "1rem 0" }}>
+      <fieldset
+        style={{ border: "none", padding: 0, margin: "1rem 0" }}
+        disabled={disabled}
+      >
         <legend style={{ fontWeight: "bold", marginBottom: "0.5rem" }}>
           Выберите один вариант:
         </legend>
@@ -67,6 +76,7 @@ export function AnswerField({ task, answer, onAnswer }: AnswerFieldProps) {
           })
         }
         rows={3}
+        disabled={disabled}
         style={{
           width: "100%",
           padding: "0.5rem",

@@ -1,11 +1,13 @@
-import type { Answer, Task, TrainingSet } from "./domain";
+import type { Answer, Task } from "./domain";
 
-export type AttemptStatus = "in-progress" | "submitted";
+export type AttemptStatus = "in-progress" | "submitted" | "pending-review";
 
 export interface AttemptState {
   currentIndex: number;
   answers: readonly Answer[];
   status: AttemptStatus;
+  attemptId?: string;
+  score?: number | null;
 }
 
 export function createInitialState(): AttemptState {
@@ -33,10 +35,7 @@ export function replaceAnswer(
   answers: readonly Answer[],
   next: Answer,
 ): readonly Answer[] {
-  return [
-    ...answers.filter((a) => a.taskId !== next.taskId),
-    next,
-  ];
+  return [...answers.filter((a) => a.taskId !== next.taskId), next];
 }
 
 export function removeAnswer(

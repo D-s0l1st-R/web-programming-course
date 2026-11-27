@@ -1,4 +1,4 @@
-import type { SingleChoiceTask, Answer } from "./domain";
+import type { SingleChoiceTask, Answer } from "../model/domain";
 
 interface SingleChoiceFormProps {
   readonly task: SingleChoiceTask;

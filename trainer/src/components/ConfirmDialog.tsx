@@ -1,4 +1,4 @@
-import type { Task } from "./domain";
+import type { Task } from "../model/domain";
 
 interface ConfirmDialogProps {
   readonly missing: readonly Task[];

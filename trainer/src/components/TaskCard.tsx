@@ -1,4 +1,4 @@
-import type { Task, Answer } from "./domain";
+import type { Task, Answer } from "../model/domain";
 import { AnswerField } from "./AnswerField";
 
 interface TaskCardProps {
@@ -12,6 +12,7 @@ interface TaskCardProps {
   readonly onFinish: () => void;
   readonly isFirst: boolean;
   readonly isLast: boolean;
+  readonly isSubmitting: boolean;
 }
 
 export function TaskCard({
@@ -25,6 +26,7 @@ export function TaskCard({
   onFinish,
   isFirst,
   isLast,
+  isSubmitting,
 }: TaskCardProps) {
   const hasAnswer = answer !== undefined;
 
@@ -71,24 +73,33 @@ export function TaskCard({
       >
         <button
           onClick={onPrev}
-          disabled={isFirst}
+          disabled={isFirst || isSubmitting}
           style={{ padding: "0.5rem 1rem" }}
         >
           Назад
         </button>
 
         {isLast ? (
-          <button onClick={onFinish} style={{ padding: "0.5rem 1rem" }}>
-            Завершить
+          <button
+            onClick={onFinish}
+            disabled={isSubmitting}
+            style={{ padding: "0.5rem 1rem" }}
+          >
+            {isSubmitting ? "Отправка..." : "Завершить"}
           </button>
         ) : (
-          <button onClick={onNext} style={{ padding: "0.5rem 1rem" }}>
+          <button
+            onClick={onNext}
+            disabled={isSubmitting}
+            style={{ padding: "0.5rem 1rem" }}
+          >
             Далее
           </button>
         )}
 
         <button
           onClick={onReview}
+          disabled={isSubmitting}
           style={{ padding: "0.5rem 1rem", marginLeft: "auto" }}
         >
           Обзор
@@ -96,11 +107,8 @@ export function TaskCard({
 
         {hasAnswer && (
           <button
-            onClick={() => {
-              if (confirm(`Удалить ответ для "${task.id}"?`)) {
-                onRemove();
-              }
-            }}
+            onClick={onRemove}
+            disabled={isSubmitting}
             style={{ padding: "0.5rem 1rem", color: "#c62828" }}
             aria-label={`Удалить ответ для задания ${task.id}`}
           >

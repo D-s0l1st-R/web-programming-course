@@ -1,4 +1,4 @@
-import type { Task } from "./domain";
+import type { Task } from "../model/domain";
 
 interface ProgressProps {
   readonly answered: number;

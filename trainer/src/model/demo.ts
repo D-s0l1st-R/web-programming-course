@@ -29,7 +29,7 @@ interface RawTrainingSet {
   "tasks ": RawTask[];
 }
 
-import rawData from "../../course/data/training-set.json" with { type: "json" };
+import rawData from "../../../course/data/training-set.json" with { type: "json" };
 
 // console.log("Структура rawData:", JSON.stringify(rawData, null, 2));
 // console.log("Ключи rawData:", Object.keys(rawData));
